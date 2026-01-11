@@ -1,0 +1,323 @@
+
+import pygame
+from pygame import KEYDOWN
+from pygame.locals import (RLEACCEL,K_w,K_s,K_a,K_d,K_ESCAPE,QUIT,K_e,) #K=key
+import random
+
+pygame.init()
+
+SCREEN_WIDTH=1400
+SCREEN_HEIGHT=788
+
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+font = pygame.font.SysFont(None, 36)
+
+background = pygame.image.load("background.png").convert_alpha()
+background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Player,self).__init__()
+        self.surf = pygame.image.load("jet.png").convert_alpha()           #otan onomazw metavlites se mia def se ena class, vazw PANTA "SELF"     "self.surf = pygame.Surface((20,10))"
+        self.surf.set_colorkey((255,255,255),RLEACCEL)               #me to fill, vafei tin epifaneia aspri "self.surf.fill((255,255,255))"
+        self.rect = self.surf.get_rect() #to rect, vasizetai sto surf. Me to get_rect, apoktaei hitbox
+        self.health= 3
+        self.score = 0
+    def update(self, pressed_keys):     #pressed_keys = metavliti
+        if pressed_keys[K_w]:
+            self.rect.move_ip(0,-5) #allazei to y h to x tou rect (x,y)
+        if pressed_keys[K_s]:
+            self.rect.move_ip(0,5)
+        if pressed_keys[K_a]:
+            self.rect.move_ip(-5,0)
+        if pressed_keys[K_d]:
+            self.rect.move_ip(5, 0)
+
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.surf = pygame.image.load("Bullet.png").convert_alpha()
+        self.rect = self.surf.get_rect(center=(x, y))
+        self.speed = 12
+
+    def update(self):
+        self.rect.x += self.speed   # move right
+        if self.rect.left > SCREEN_WIDTH:
+            self.kill()
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Enemy,self).__init__()
+        self.surf = pygame.image.load("enemy2.png").convert_alpha()
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(SCREEN_WIDTH + 20, SCREEN_WIDTH + 100),
+                random.randint(0, SCREEN_HEIGHT),
+            )
+        )
+        self.speed = random.randint(5,10)
+
+
+    #Move the sprite base on speed
+    #Remove the sprite when it passes the left edge of the screen
+    def update(self):
+        self.rect.move_ip(-self.speed,0)
+        if self.rect.right < 0:
+            self.kill()
+
+class Meteor(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Meteor,self).__init__()
+        self.surf = pygame.image.load("Meteor.png").convert_alpha()
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(0, SCREEN_WIDTH),
+                random.randint(-100, -40),
+            )
+        )
+        self.speed = random.randint(10,30)
+
+
+    def update(self):
+        self.rect.move_ip(0, self.speed)
+        if self.rect.top > SCREEN_HEIGHT:
+            self.kill()
+
+class Pill(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Pill,self).__init__()
+        self.surf= pygame.image.load("Badpill.png").convert_alpha()
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(0,SCREEN_WIDTH),
+                random.randint(0,SCREEN_HEIGHT)
+            )
+        )
+
+class Badpill(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Badpill,self).__init__()
+        self.surf = pygame.image.load("Pill.png").convert_alpha()
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(0,SCREEN_WIDTH),
+                random.randint(0,SCREEN_HEIGHT)
+            )
+        )
+
+class Medkit(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Medkit,self).__init__()
+        self.surf = pygame.image.load("Medkit.png").convert_alpha()
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(0,SCREEN_WIDTH),
+                random.randint(0,SCREEN_HEIGHT)
+            )
+        )
+
+
+
+
+
+
+
+
+ADDMETEOR = pygame.USEREVENT + 2
+pygame.time.set_timer(ADDMETEOR, 1000)
+
+pygame.init()
+
+
+
+
+
+
+ADDENEMY= pygame.USEREVENT + 1
+pygame.time.set_timer(ADDENEMY, 300)       # trigger enemies ana 250 millisecond
+
+ADDPILL = pygame.USEREVENT + 3
+pygame.time.set_timer(ADDPILL,3000)
+
+ADDBPILL = pygame.USEREVENT + 4
+pygame.time.set_timer(ADDBPILL, 10000)
+
+ADDMED = pygame.USEREVENT + 5
+pygame.time.set_timer(ADDMED, 15000)
+
+
+
+
+player=Player()                                         ###########################################
+
+enemies = pygame.sprite.Group()
+meteors = pygame.sprite.Group()
+pills = pygame.sprite.Group()
+bpills = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
+meds = pygame.sprite.Group()
+
+all_sprites = pygame.sprite.Group()
+all_sprites.add(player)
+
+MAX_AMMO = 30
+ammo = MAX_AMMO
+RELOAD_TIME = 5000  # 10 seconds (milliseconds)
+reloading = False
+reload_start_time = 0
+
+#Variable to keep it running
+running=True
+
+clock = pygame.time.Clock()
+#Main loop
+while running:
+    #Look at every event in the queue
+    for event in pygame.event.get():
+
+        if event.type == QUIT:
+            running = False
+
+        elif event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                running = False
+
+            if event.key == K_e and not reloading:
+                if ammo > 0:
+                    bullet = Bullet(player.rect.right, player.rect.centery)
+                    bullets.add(bullet)
+                    all_sprites.add(bullet)
+                    ammo -= 1
+
+                    # Start reload if ammo reached 0
+                if ammo == 0:
+                    reloading = True
+                    reload_start_time = pygame.time.get_ticks()
+
+
+
+            elif event.key == pygame.K_r and not reloading:
+                reloading = True
+                reload_start_time = pygame.time.get_ticks()
+
+        elif event.type == ADDENEMY:
+            new_enemy = Enemy()
+            enemies.add(new_enemy)
+            all_sprites.add(new_enemy)
+
+        elif event.type == ADDMETEOR:
+            new_meteor = Meteor()
+            meteors.add(new_meteor)
+            all_sprites.add(new_meteor)
+
+        elif event.type == ADDPILL:
+            new_pill = Pill()
+            pills.add(new_pill)
+            all_sprites.add(new_pill)
+
+        elif event.type == ADDBPILL:
+            new_bpill = Badpill()
+            bpills.add(new_bpill)
+            all_sprites.add(new_bpill)
+
+        elif event.type == ADDMED:
+            new_med = Medkit()
+            meds.add(new_med)
+            all_sprites.add(new_med)
+
+
+    if reloading:
+        current_time = pygame.time.get_ticks()
+        if current_time - reload_start_time >= RELOAD_TIME:
+            reloading = False
+            ammo = MAX_AMMO
+
+
+
+    pressed_keys=pygame.key.get_pressed()
+
+    #Update enemy position
+    enemies.update()
+    meteors.update()
+    pills.update()
+    bpills.update()
+    bullets.update()
+    meds.update()
+
+    screen.blit(background, (0, 0))
+
+    #Update the player sprite based on user keypressed
+    player.update(pressed_keys)
+
+    health_text = font.render(f"Health: {player.health}", True, (255, 0, 0))
+    screen.blit(health_text, (10, 10))
+
+    score_text = font.render(f"Score: {player.score}", True, (255, 0, 0))
+    score_rect = score_text.get_rect(topright=(SCREEN_WIDTH - 10, 10))
+    screen.blit(score_text, score_rect)
+
+    ammo_text = font.render(f"Ammo: {ammo}/{MAX_AMMO}", True, (255, 255, 0))
+    ammo_rect = ammo_text.get_rect(topright=(SCREEN_WIDTH - 10, 50))
+    screen.blit(ammo_text, ammo_rect)
+
+    if reloading:
+        reload_text = font.render("Reloading...", True, (255, 255, 0))
+        reload_rect = reload_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
+        screen.blit(reload_text, reload_rect)
+
+
+
+
+
+    for entity in all_sprites:              #loop, eksetazei ti iparxei sto group, kai me to blit ta emfanizei   #all srites=group
+        screen.blit(entity.surf, entity.rect)
+
+    # Check if any enemies have collided with the player
+
+    if pygame.sprite.spritecollideany(player, enemies):
+        player.health-=1
+        collided_enemy = pygame.sprite.spritecollideany(player, enemies)
+        collided_enemy.kill()
+
+    if pygame.sprite.spritecollideany(player, meteors):
+        player.health-=0.5
+        collided_meteor = pygame.sprite.spritecollideany(player, meteors)
+        collided_meteor.kill()
+
+    if pygame.sprite.spritecollideany(player, pills):
+        player.health+=2
+        collided_pill = pygame.sprite.spritecollideany(player, pills)
+        collided_pill.kill()
+
+    if pygame.sprite.spritecollideany(player, bpills):
+        player.health-=0.5
+        collided_bpill = pygame.sprite.spritecollideany(player, bpills)
+        collided_bpill.kill()
+
+
+
+    for bullet in bullets:
+        collided_enemy = pygame.sprite.spritecollideany(bullet, enemies)
+        if collided_enemy:
+            bullet.kill()
+            collided_enemy.kill()
+            player.score += 1
+
+    if pygame.sprite.spritecollideany(player, meds):
+        player.health+=5
+        collided_med = pygame.sprite.spritecollideany(player, meds)
+        collided_med.kill()
+
+
+
+
+    if player.health<=0:
+        running=False
+
+
+
+
+    clock.tick(60)
+    #  This line says "Draw surf on the screen at the center"
+    pygame.display.flip()
