@@ -1,4 +1,3 @@
-
 import pygame
 from pygame import KEYDOWN
 from pygame.locals import (RLEACCEL,K_w,K_s,K_a,K_d,K_ESCAPE,QUIT,K_e,) #K=key
@@ -22,7 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.surf.set_colorkey((255,255,255),RLEACCEL)               #me to fill, vafei tin epifaneia aspri "self.surf.fill((255,255,255))"
         self.rect = self.surf.get_rect() #to rect, vasizetai sto surf. Me to get_rect, apoktaei hitbox
         self.health= 3
-        self.score = 0
+        self.score = 98
     def update(self, pressed_keys):     #pressed_keys = metavliti
         if pressed_keys[K_w]:
             self.rect.move_ip(0,-5) #allazei to y h to x tou rect (x,y)
@@ -32,6 +31,28 @@ class Player(pygame.sprite.Sprite):
             self.rect.move_ip(-5,0)
         if pressed_keys[K_d]:
             self.rect.move_ip(5, 0)
+
+
+class Boss(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Boss,self).__init__()
+        self.surf = pygame.image.load("Boss.png").convert_alpha()
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(SCREEN_WIDTH + 20, SCREEN_WIDTH + 100),
+                random.randint(0, SCREEN_HEIGHT),
+            )
+        )
+        self.health = 30
+        self.speed = 2
+
+    def update(self):
+        self.rect.move_ip(-self.speed,0)
+        if self.rect.right < 0:
+            self.kill()
+
+
+
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -50,6 +71,7 @@ class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         super(Enemy,self).__init__()
         self.surf = pygame.image.load("enemy2.png").convert_alpha()
+        self.health = 1
         self.rect = self.surf.get_rect(
             center=(
                 random.randint(SCREEN_WIDTH + 20, SCREEN_WIDTH + 100),
@@ -129,6 +151,7 @@ pygame.time.set_timer(ADDMETEOR, 1000)
 
 pygame.init()
 
+boss_spawned = False
 
 
 
@@ -157,10 +180,12 @@ pills = pygame.sprite.Group()
 bpills = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 meds = pygame.sprite.Group()
+boss = pygame.sprite.Group()
 
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
 
+boss_fight = False
 MAX_AMMO = 30
 ammo = MAX_AMMO
 RELOAD_TIME = 5000  # 10 seconds (milliseconds)
@@ -183,6 +208,8 @@ while running:
             if event.key == K_ESCAPE:
                 running = False
 
+
+
             if event.key == K_e and not reloading:
                 if ammo > 0:
                     bullet = Bullet(player.rect.right, player.rect.centery)
@@ -201,12 +228,12 @@ while running:
                 reloading = True
                 reload_start_time = pygame.time.get_ticks()
 
-        elif event.type == ADDENEMY:
+        elif event.type == ADDENEMY and not boss_fight:
             new_enemy = Enemy()
             enemies.add(new_enemy)
             all_sprites.add(new_enemy)
 
-        elif event.type == ADDMETEOR:
+        elif event.type == ADDMETEOR and not boss_fight:
             new_meteor = Meteor()
             meteors.add(new_meteor)
             all_sprites.add(new_meteor)
@@ -226,12 +253,24 @@ while running:
             meds.add(new_med)
             all_sprites.add(new_med)
 
+        if player.score >= 100 and not boss_spawned:
+            new_boss = Boss()
+            boss.add(new_boss)
+            all_sprites.add(new_boss)
+
+            boss_spawned = True
+            boss_fight = True
 
     if reloading:
         current_time = pygame.time.get_ticks()
         if current_time - reload_start_time >= RELOAD_TIME:
             reloading = False
             ammo = MAX_AMMO
+
+
+
+
+
 
 
 
@@ -244,6 +283,7 @@ while running:
     bpills.update()
     bullets.update()
     meds.update()
+    boss.update()
 
     screen.blit(background, (0, 0))
 
@@ -304,10 +344,32 @@ while running:
             collided_enemy.kill()
             player.score += 1
 
+    for bullet in bullets:
+        collided_boss = pygame.sprite.spritecollideany(bullet, boss)
+        if collided_boss:
+            bullet.kill()
+            collided_boss.health-=1
+
+
+            if collided_boss.health <= 0:
+                collided_boss.kill()
+                player.score+=50
+                boss_fight = False
+                MAX_AMMO = 50
+                RELOAD_TIME = 3000
+
+
+
     if pygame.sprite.spritecollideany(player, meds):
         player.health+=5
         collided_med = pygame.sprite.spritecollideany(player, meds)
         collided_med.kill()
+
+    if pygame.sprite.spritecollideany(player, boss):
+        player.health = 0
+        collided_boss = pygame.sprite.spritecollideany(player, boss)
+        collided_boss.kill()
+
 
 
 
