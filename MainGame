@@ -21,17 +21,27 @@ class Player(pygame.sprite.Sprite):
         self.surf = pygame.image.load("jet.png").convert_alpha()           #otan onomazw metavlites se mia def se ena class, vazw PANTA "SELF"     "self.surf = pygame.Surface((20,10))"
         self.surf.set_colorkey((255,255,255),RLEACCEL)               #me to fill, vafei tin epifaneia aspri "self.surf.fill((255,255,255))"
         self.rect = self.surf.get_rect() #to rect, vasizetai sto surf. Me to get_rect, apoktaei hitbox
+        self.rect.center = (SCREEN_WIDTH// 4, SCREEN_HEIGHT // 2)
         self.health= 2
         self.score = 0
     def update(self, pressed_keys):     #pressed_keys = metavliti
         if pressed_keys[K_w]:
-            self.rect.move_ip(0,-5) #allazei to y h to x tou rect (x,y)
+            self.rect.y -=5 #allazei to y h to x tou rect (x,y)
         if pressed_keys[K_s]:
-            self.rect.move_ip(0,5)
+            self.rect.y += 5
         if pressed_keys[K_a]:
-            self.rect.move_ip(-5,0)
+            self.rect.x -= 5
         if pressed_keys[K_d]:
-            self.rect.move_ip(5, 0)
+            self.rect.x += 5
+
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT
 
 class Boss(pygame.sprite.Sprite):
     def __init__(self):
