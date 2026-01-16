@@ -1,13 +1,17 @@
-
 import pygame
 from pygame import KEYDOWN
-from pygame.locals import (RLEACCEL,K_w,K_s,K_a,K_d,K_ESCAPE,QUIT,K_e,) #K=key
+from pygame.locals import (RLEACCEL,K_w,K_s,K_a,K_d,K_ESCAPE,QUIT,K_e,K_RETURN,) #K=key
 import random
 
 pygame.init()
 
 SCREEN_WIDTH=1400
 SCREEN_HEIGHT=788
+
+GAME = "game"
+GAMEOVER = "gameover"
+
+state = GAME
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 font = pygame.font.SysFont(None, 36)
@@ -18,15 +22,16 @@ background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super(Player,self).__init__()
-        self.surf = pygame.image.load("jet.png").convert_alpha()           #otan onomazw metavlites se mia def se ena class, vazw PANTA "SELF"     "self.surf = pygame.Surface((20,10))"
-        self.surf.set_colorkey((255,255,255),RLEACCEL)               #me to fill, vafei tin epifaneia aspri "self.surf.fill((255,255,255))"
-        self.rect = self.surf.get_rect() #to rect, vasizetai sto surf. Me to get_rect, apoktaei hitbox
+        self.surf = pygame.image.load("jet.png").convert_alpha()
+        self.surf.set_colorkey((255,255,255),RLEACCEL)
+        self.rect = self.surf.get_rect()
         self.rect.center = (SCREEN_WIDTH// 4, SCREEN_HEIGHT // 2)
         self.health= 2
         self.score = 0
-    def update(self, pressed_keys):     #pressed_keys = metavliti
+        self.speed = 5
+    def update(self, pressed_keys):
         if pressed_keys[K_w]:
-            self.rect.y -=5 #allazei to y h to x tou rect (x,y)
+            self.rect.y -=5
         if pressed_keys[K_s]:
             self.rect.y += 5
         if pressed_keys[K_a]:
@@ -79,10 +84,6 @@ class Boss2(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
 
-
-
-
-
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -91,7 +92,7 @@ class Bullet(pygame.sprite.Sprite):
         self.speed = 12
 
     def update(self):
-        self.rect.x += self.speed   # move right
+        self.rect.x += self.speed
         if self.rect.left > SCREEN_WIDTH:
             self.kill()
 
@@ -108,9 +109,6 @@ class Enemy(pygame.sprite.Sprite):
         )
         self.speed = random.randint(5,10)
 
-
-    #Move the sprite base on speed
-    #Remove the sprite when it passes the left edge of the screen
     def update(self):
         self.rect.move_ip(-self.speed,0)
         if self.rect.right < 0:
@@ -127,7 +125,6 @@ class Meteor(pygame.sprite.Sprite):
             )
         )
         self.speed = random.randint(10,30)
-
 
     def update(self):
         self.rect.move_ip(0, self.speed)
@@ -167,40 +164,18 @@ class Medkit(pygame.sprite.Sprite):
             )
         )
 
-
-
-
-
-
-
-
 ADDMETEOR = pygame.USEREVENT + 2
 pygame.time.set_timer(ADDMETEOR, 1000)
-
-pygame.init()
-
-boss_spawned = False
-
-
-
-
-
 ADDENEMY= pygame.USEREVENT + 1
-pygame.time.set_timer(ADDENEMY, 300)       # trigger enemies ana 250 millisecond
-
+pygame.time.set_timer(ADDENEMY, 300)
 ADDPILL = pygame.USEREVENT + 3
 pygame.time.set_timer(ADDPILL,3000)
-
 ADDBPILL = pygame.USEREVENT + 4
 pygame.time.set_timer(ADDBPILL, 10000)
-
 ADDMED = pygame.USEREVENT + 5
 pygame.time.set_timer(ADDMED, 15000)
 
-
-
-
-player=Player()                                         ###########################################
+player=Player()
 
 enemies = pygame.sprite.Group()
 meteors = pygame.sprite.Group()
@@ -210,7 +185,6 @@ bullets = pygame.sprite.Group()
 meds = pygame.sprite.Group()
 boss = pygame.sprite.Group()
 boss2 = pygame.sprite.Group()
-
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
 
@@ -220,105 +194,89 @@ boss2_spawned = False
 boss_spawned = False
 MAX_AMMO = 30
 ammo = MAX_AMMO
-RELOAD_TIME = 5000  # 10 seconds (milliseconds)
+RELOAD_TIME = 5000
 reloading = False
 reload_start_time = 0
-
-#Variable to keep it running
 running=True
-
 clock = pygame.time.Clock()
-#Main loop
-while running:
-    #Look at every event in the queue
-    for event in pygame.event.get():
 
+# Main loop
+while running:
+
+    for event in pygame.event.get():
         if event.type == QUIT:
             running = False
-
         elif event.type == KEYDOWN:
-            if event.key == K_ESCAPE:
-                running = False
+            if state == GAMEOVER:
+                if event.key == K_RETURN:
+                    # Reset game
+                    player = Player()
+                    enemies.empty()
+                    meteors.empty()
+                    bullets.empty()
+                    pills.empty()
+                    bpills.empty()
+                    meds.empty()
+                    boss.empty()
+                    boss2.empty()
+                    all_sprites.empty()
+                    all_sprites.add(player)
+                    ammo = MAX_AMMO
+                    boss_fight = False
+                    boss_fight2 = False
+                    boss_spawned = False
+                    boss2_spawned = False
+                    state = GAME
+                elif event.key == K_ESCAPE:
+                    running = False
 
-
-
-            if event.key == K_e and not reloading:
-                if ammo > 0:
-                    bullet = Bullet(player.rect.right, player.rect.centery)
-                    bullets.add(bullet)
-                    all_sprites.add(bullet)
-                    ammo -= 1
-
-                    # Start reload if ammo reached 0
-                if ammo == 0:
+            if state == GAME:
+                if event.key == K_e and not reloading:
+                    if ammo > 0:
+                        bullet = Bullet(player.rect.right, player.rect.centery)
+                        bullets.add(bullet)
+                        all_sprites.add(bullet)
+                        ammo -= 1
+                    if ammo == 0:
+                        reloading = True
+                        reload_start_time = pygame.time.get_ticks()
+                elif event.key == pygame.K_r and not reloading:
                     reloading = True
                     reload_start_time = pygame.time.get_ticks()
-
-
-
-            elif event.key == pygame.K_r and not reloading:
-                reloading = True
-                reload_start_time = pygame.time.get_ticks()
 
         elif event.type == ADDENEMY and not (boss_fight or boss_fight2):
             new_enemy = Enemy()
             enemies.add(new_enemy)
             all_sprites.add(new_enemy)
-
         elif event.type == ADDMETEOR and not (boss_fight or boss_fight2):
             new_meteor = Meteor()
             meteors.add(new_meteor)
             all_sprites.add(new_meteor)
-
         elif event.type == ADDPILL:
             new_pill = Pill()
             pills.add(new_pill)
             all_sprites.add(new_pill)
-
         elif event.type == ADDBPILL:
             new_bpill = Badpill()
             bpills.add(new_bpill)
             all_sprites.add(new_bpill)
-
         elif event.type == ADDMED:
             new_med = Medkit()
             meds.add(new_med)
             all_sprites.add(new_med)
 
-        if 100 <= player.score < 500 and not boss_spawned:
-            new_boss = Boss()
-            boss.add(new_boss)
-            all_sprites.add(new_boss)
-            boss_fight = True
-            boss_spawned = True
+    if state == GAMEOVER:
+        # Draw GAMEOVER screen and skip rest
+        score_text2 = font.render(f"Your Score: {player.score}", True, (255,0,0))
+        screen.blit(score_text2, score_text2.get_rect(center=(SCREEN_WIDTH//2,300)))
+        enter_text = font.render("You died. Press ENTER to restart", True, (255,0,0))
+        screen.blit(enter_text, enter_text.get_rect(center=(SCREEN_WIDTH//2,350)))
+        pygame.display.flip()
+        clock.tick(60)
+        continue  # Stops game updates, prevents flashing
 
-
-
-        if player.score >= 500 and not boss2_spawned:
-            new_boss2 = Boss2()
-            boss2.add(new_boss2)
-            all_sprites.add(new_boss2)
-            boss_fight2 = True
-            boss2_spawned = True
-
-    if reloading:
-        current_time = pygame.time.get_ticks()
-        if current_time - reload_start_time >= RELOAD_TIME:
-            reloading = False
-            ammo = MAX_AMMO
-
-
-
-
-
-
-
-
-
-
+    # Normal game updates below
     pressed_keys=pygame.key.get_pressed()
-
-    #Update enemy position
     enemies.update()
     meteors.update()
     pills.update()
@@ -327,57 +285,41 @@ while running:
     meds.update()
     boss.update()
     boss2.update()
-
-    screen.blit(background, (0, 0))
-
-    #Update the player sprite based on user keypressed
     player.update(pressed_keys)
 
+    screen.blit(background, (0, 0))
     health_text = font.render(f"Health: {player.health}", True, (255, 0, 0))
     screen.blit(health_text, (10, 10))
-
     score_text = font.render(f"Score: {player.score}", True, (255, 0, 0))
-    score_rect = score_text.get_rect(topright=(SCREEN_WIDTH - 10, 10))
-    screen.blit(score_text, score_rect)
-
+    screen.blit(score_text, score_text.get_rect(topright=(SCREEN_WIDTH - 10, 10)))
     ammo_text = font.render(f"Ammo: {ammo}/{MAX_AMMO}", True, (255, 255, 0))
-    ammo_rect = ammo_text.get_rect(topright=(SCREEN_WIDTH - 10, 50))
-    screen.blit(ammo_text, ammo_rect)
+    screen.blit(ammo_text, ammo_text.get_rect(topright=(SCREEN_WIDTH - 10, 50)))
 
     if reloading:
         reload_text = font.render("Reloading...", True, (255, 255, 0))
-        reload_rect = reload_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
-        screen.blit(reload_text, reload_rect)
+        screen.blit(reload_text, reload_text.get_rect(center=(SCREEN_WIDTH // 2, 50)))
 
-
-
-
-
-    for entity in all_sprites:              #loop, eksetazei ti iparxei sto group, kai me to blit ta emfanizei   #all srites=group
+    for entity in all_sprites:
         screen.blit(entity.surf, entity.rect)
 
-    # Check if any enemies have collided with the player
-
+    # Collisions
     if pygame.sprite.spritecollideany(player, enemies):
         player.health-=1
         collided_enemy = pygame.sprite.spritecollideany(player, enemies)
         collided_enemy.kill()
-
     if pygame.sprite.spritecollideany(player, meteors):
         player.health-=0.5
         collided_meteor = pygame.sprite.spritecollideany(player, meteors)
         collided_meteor.kill()
-
     if pygame.sprite.spritecollideany(player, pills):
         player.health+=2
         collided_pill = pygame.sprite.spritecollideany(player, pills)
         collided_pill.kill()
-
     if pygame.sprite.spritecollideany(player, bpills):
         player.health-=0.5
         collided_bpill = pygame.sprite.spritecollideany(player, bpills)
         collided_bpill.kill()
-
+        player.speed -=1
 
     for bullet in bullets:
         collided_enemy = pygame.sprite.spritecollideany(bullet, enemies)
@@ -391,8 +333,6 @@ while running:
         if collided_boss:
             bullet.kill()
             collided_boss.health-=1
-
-
             if collided_boss.health <= 0:
                 collided_boss.kill()
                 boss_fight = False
@@ -406,8 +346,6 @@ while running:
         if collided_boss2:
             bullet.kill()
             collided_boss2.health-=1
-
-
             if collided_boss2.health <= 0:
                 collided_boss2.kill()
                 player.score+=50
@@ -417,42 +355,34 @@ while running:
                 RELOAD_TIME = 1500
                 player.surf = pygame.image.load("player3.png").convert_alpha()
 
-#Boss 1 med+pill(and bpill also) collision
     pygame.sprite.groupcollide(boss, meds, False, True)
     pygame.sprite.groupcollide(boss, pills, False, True)
     pygame.sprite.groupcollide(boss, bpills, False, True)
-
-#To idio gia boss2
     pygame.sprite.groupcollide(boss2, meds, False, True)
     pygame.sprite.groupcollide(boss2, pills, False, True)
     pygame.sprite.groupcollide(boss2, bpills, False, True)
-
 
     if pygame.sprite.spritecollideany(player, meds):
         player.health+=5
         collided_med = pygame.sprite.spritecollideany(player, meds)
         collided_med.kill()
-
     if pygame.sprite.spritecollideany(player, boss):
         player.health = 0
         collided_boss = pygame.sprite.spritecollideany(player, boss)
         collided_boss.kill()
-
     if pygame.sprite.spritecollideany(player, boss2):
         player.health = 0
         collided_boss2 = pygame.sprite.spritecollideany(player, boss2)
         collided_boss2.kill()
 
-
-
-
-
     if player.health<=0:
-        running=False
+        state = GAMEOVER
 
-
-
+    if reloading:
+        current_time = pygame.time.get_ticks()
+        if current_time - reload_start_time >= RELOAD_TIME:
+            reloading = False
+            ammo = MAX_AMMO
 
     clock.tick(60)
-    #  This line says "Draw surf on the screen at the center"
     pygame.display.flip()
