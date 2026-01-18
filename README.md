@@ -1,141 +1,63 @@
-🎮 Space Shooter Game (Python + Pygame)
+Jet Shooter Game
 
-This is a 2D space shooter game made with Python and Pygame.
+Jet Shooter is a 2D arcade-style shooting game built with Python and Pygame. Players control a jet fighter, avoiding meteors, collecting power-ups, and battling increasingly difficult enemies and bosses.
 
-You control a spaceship and try to survive as long as possible, shoot enemies, and get a high score.
+Features
 
-🚀 How the Game Works
+Player Mechanics: Move freely with W, A, S, D keys and shoot with E.
 
-You control a jet that can move around the screen
+Enemies & Bosses:
 
-Enemies and meteors appear automatically
+Regular enemies spawn frequently.
 
-You can shoot bullets to destroy enemies
+Three progressively stronger bosses appear as your score increases.
 
-Some items help you, others hurt you
+Power-ups:
 
-The game ends when your health reaches 0
+Health packs (Medkit) restore player health.
 
-🎮 Controls
-Key	Action
-W	Move up
-S	Move down
-A	Move left
-D	Move right
-E	Shoot
-R	Reload
-ESC	Quit game
-❤️ Health & Score
+Ammo pickups increase your bullet count.
 
-You start with 3 health
+Pills and bad pills affect health and speed.
 
-Hitting enemies or meteors reduces health
+Dynamic Obstacles: Meteors fall from the top of the screen and damage the player.
 
-Picking up health items restores health
+Ammo System: Limited ammo with reloading mechanic for added strategy.
 
-Destroying enemies increases your score
+Score Tracking: Score points by destroying enemies and bosses.
 
-When health reaches 0, the game ends
+Game Over & Restart: If health reaches zero, players can restart or return to the main menu.
 
-🔫 Shooting & Ammo
+Controls
+Action	Key
+Move Up	W
+Move Down	S
+Move Left	A
+Move Right	D
+Shoot	E
+Reload	R
+Start Game	Space
+Restart	Enter
+Return to Menu	F
+How to Run
 
-You have 30 bullets
+Install Pygame if not already installed:
 
-Each shot uses 1 bullet
+pip install pygame
 
-When ammo reaches 0, the gun reloads automatically
 
-You can also reload manually with R
+Make sure all image assets are in the same directory:
 
-Reloading takes 5 seconds
+background.png, background3.png, jet.png, player2.png, player3.png, enemy2.png, Boss.png, boss2.png, boss3.png, Bullet.png, Ammo.png, Medkit.png, Pill.png, Badpill.png, Meteor.png, gameoverscreen.png
 
-👾 Game Objects
-Player
+Run the game:
 
-The spaceship you control
+python main.py
 
-Can move in all directions
+Notes
 
-Shoots bullets
+The game scales to a 1400x788 screen resolution.
 
-Has health and score
+Boss fights modify the player’s abilities and reload times.
 
-Enemies
-
-Fly from the right side of the screen
-
-Reduce health if they hit you
-
-Can be destroyed with bullets
-
-Meteors
-
-Fall from the top of the screen
-
-Damage the player on contact
-
-Items
-Item	Effect
-Pill	+2 health
-Bad Pill	-0.5 health
-Medkit	+5 health
-⏱️ Spawning System
-
-The game uses timers to spawn objects automatically:
-
-Enemies: every 0.3 seconds
-
-Meteors: every 1 second
-
-Pills: every 3 seconds
-
-Bad Pills: every 10 seconds
-
-Medkits: every 15 seconds
-
-🧠 Game Logic (Simple Explanation)
-
-The game runs in a loop
-
-Every frame:
-
-Player movement is updated
-
-Enemies and objects move
-
-Collisions are checked
-
-Health, score, and ammo are updated
-
-If the player’s health reaches 0 → Game Over
-
-🛠️ Technologies Used
-
-Python
-
-Pygame
-
-Object-oriented programming (classes)
-
-Sprites and collision detection
-
-Timers and events
-
-📂 Assets Used
-
-The game uses image files for:
-
-Player
-
-Enemies
-
-Meteors
-
-Bullets
-
-Background
-
-Power-ups
-
-(All assets must be in the same folder as the Python file)# Space-Shooter-Game
-A really basic space shooter game. Basic code and lots of classes.
+Enjoy progressively harder challenges as your score increases!
