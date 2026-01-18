@@ -20,12 +20,12 @@ while True:
     class Player(pygame.sprite.Sprite):
         def __init__(self):
             super(Player,self).__init__()
-            self.surf = pygame.image.load("jet.png").convert_alpha()           
-            self.surf.set_colorkey((255,255,255),RLEACCEL)            
-            self.rect = self.surf.get_rect() 
+            self.surf = pygame.image.load("jet.png").convert_alpha()           #otan onomazw metavlites se mia def se ena class, vazw PANTA "SELF"     "self.surf = pygame.Surface((20,10))"
+            self.surf.set_colorkey((255,255,255),RLEACCEL)               #me to fill, vafei tin epifaneia aspri "self.surf.fill((255,255,255))"
+            self.rect = self.surf.get_rect() #to rect, vasizetai sto surf. Me to get_rect, apoktaei hitbox
             self.rect.center = (SCREEN_WIDTH// 4, SCREEN_HEIGHT // 2)
             self.health= 2
-            self.score = 0
+            self.score = 999
             self.speed = 5
         def update(self, pressed_keys):     #pressed_keys = metavliti
             if pressed_keys[K_w]:
@@ -218,7 +218,7 @@ while True:
     startscreen = True
 
     ADDENEMY= pygame.USEREVENT + 1
-    pygame.time.set_timer(ADDENEMY, 300)       
+    pygame.time.set_timer(ADDENEMY, 300)       # trigger enemies ana 250 millisecond
 
     ADDPILL = pygame.USEREVENT + 3
     pygame.time.set_timer(ADDPILL,3000)
@@ -235,7 +235,7 @@ while True:
 
 
 
-    player=Player()                             
+    player=Player()                                         ###########################################
 
     enemies = pygame.sprite.Group()
     meteors = pygame.sprite.Group()
@@ -450,10 +450,10 @@ while True:
 
 
 
-        for entity in all_sprites:             
+        for entity in all_sprites:              #loop, eksetazei ti iparxei sto group, kai me to blit ta emfanizei   #all srites=group
             screen.blit(entity.surf, entity.rect)
 
-     
+        # Check if any enemies have collided with the player
 
         if pygame.sprite.spritecollideany(player, enemies):
             player.health-=1
@@ -506,6 +506,7 @@ while True:
                     player.score+=50
                     MAX_AMMO = 50
                     RELOAD_TIME = 3000
+                    bullet.speed = 15
                     player.surf = pygame.image.load("player2.png").convert_alpha()
 
         for bullet in bullets:
@@ -522,10 +523,11 @@ while True:
                     MAX_AMMO = 100
                     ammo = MAX_AMMO
                     RELOAD_TIME = 1500
+                    bullet.speed = 20
                     player.surf = pygame.image.load("player3.png").convert_alpha()
 
         for bullet in bullets:
-            collided_boss3 = pygame.sprite.spritecollideany(bullet, boss2)
+            collided_boss3 = pygame.sprite.spritecollideany(bullet, boss3)
             if collided_boss3:
                 bullet.kill()
                 collided_boss3.health-=1
@@ -538,21 +540,23 @@ while True:
                     MAX_AMMO = 200
                     ammo = MAX_AMMO
                     RELOAD_TIME = 1000
-                    player.surf = pygame.image.load("player3.png").convert_alpha()
+                    bullet.speed = 25
+                    player.surf = pygame.image.load("player4.png").convert_alpha()
 
 
-    #Boss1 med+pill(and bpill also) collision:
+    #Boss 1 med+pill(and bpill also) collision:
         pygame.sprite.groupcollide(boss, meds, False, True)
         pygame.sprite.groupcollide(boss, pills, False, True)
         pygame.sprite.groupcollide(boss, bpills, False, True)
         pygame.sprite.groupcollide(boss, ammos, False, True)
-    #Boss2 collisions:
+
+    #To idio gia boss2:
         pygame.sprite.groupcollide(boss2, meds, False, True)
         pygame.sprite.groupcollide(boss2, pills, False, True)
         pygame.sprite.groupcollide(boss2, bpills, False, True)
         pygame.sprite.groupcollide(boss, ammos, False, True)
 
-    #Boss3 collisions
+    #Collisions for boss3:
         pygame.sprite.groupcollide(boss3, meds, False, True)
         pygame.sprite.groupcollide(boss3, pills, False, True)
         pygame.sprite.groupcollide(boss3, bpills, False, True)
@@ -632,7 +636,7 @@ while True:
 
 
 
-                
+                # Draw the Game Over screen
                 screen.blit(background2, (0, 0))
                 score_text2 = font.render(f"Your Score: {player.score}", True, (255, 0, 0))
                 screen.blit(score_text2, score_text2.get_rect(center=(SCREEN_WIDTH // 2, 150)))
@@ -647,6 +651,5 @@ while True:
 
 
         clock.tick(60)
+        #  This line says "Draw surf on the screen at the center"
         pygame.display.flip()
-
-
