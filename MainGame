@@ -121,7 +121,7 @@ while True:
         def __init__(self, x, y, direction):
             super().__init__()
             BULLET_SPEED = 10
-            self.surf = pygame.image.load("bullet.png").convert_alpha()
+            self.surf = pygame.image.load("bullet3.png").convert_alpha()
             self.rect = self.surf.get_rect(center=(x, y))
             self.speed = BULLET_SPEED
             self.direction = direction
@@ -382,10 +382,18 @@ while True:
                     all_sprites.add(bullet)
                     ammo -= 1
 
+                    if ammo == 0:
+                        reloading = True
+                        reload_start_time = pygame.time.get_ticks()
+
+
+                    if ammo == MAX_AMMO:
+                        reloading = False
 
 
 
-                elif event.key == pygame.K_r and not reloading:
+
+                elif event.key == pygame.K_r and not reloading and ammo < MAX_AMMO:
                     reloading = True
                     reload_start_time = pygame.time.get_ticks()
 
@@ -547,9 +555,8 @@ while True:
         collided_ammo = pygame.sprite.spritecollideany(player, ammos)
 
         if collided_ammo:
-            if ammo < MAX_AMMO:
-                ammo += 5
-                ammo = min(ammo, MAX_AMMO)
+            ammo = min(ammo + 5, MAX_AMMO)
+            reloading = False
             collided_ammo.kill()
 
 
