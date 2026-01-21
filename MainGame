@@ -28,7 +28,7 @@ while True:
             self.rect = self.surf.get_rect() #to rect, vasizetai sto surf. Me to get_rect, apoktaei hitbox
             self.rect.center = (SCREEN_WIDTH// 4, SCREEN_HEIGHT // 2)
             self.health= 2
-            self.score =1000
+            self.score = 0
             self.speed = 5
             self.direction = "right"
 
@@ -83,7 +83,7 @@ while True:
                     random.randint(0, SCREEN_HEIGHT),
                 )
             )
-            self.health = 1
+            self.health = 100
             self.speed = 1
 
         def update(self):
@@ -101,7 +101,7 @@ while True:
                     random.randint(0, SCREEN_HEIGHT),
                 )
             )
-            self.health = 1
+            self.health = 167
             self.speed = 1
 
         def update(self):
