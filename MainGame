@@ -3,6 +3,9 @@ from pygame import KEYDOWN
 from pygame.locals import (RLEACCEL,K_w,K_s,K_a,K_d,K_ESCAPE,QUIT,K_e,K_RETURN,K_SPACE,K_f,) #K=key
 import random
 
+
+
+
 pygame.init()
 while True:
 
@@ -25,9 +28,10 @@ while True:
             self.rect = self.surf.get_rect() #to rect, vasizetai sto surf. Me to get_rect, apoktaei hitbox
             self.rect.center = (SCREEN_WIDTH// 4, SCREEN_HEIGHT // 2)
             self.health= 2
-            self.score = 0
+            self.score =1000
             self.speed = 5
             self.direction = "right"
+
         def update(self, pressed_keys):     #pressed_keys = metavliti
             if pressed_keys[K_w]:
                 self.rect.y -=5 #allazei to y h to x tou rect (x,y)
@@ -46,6 +50,8 @@ while True:
                 self.rect.top = 0
             if self.rect.bottom > SCREEN_HEIGHT:
                 self.rect.bottom = SCREEN_HEIGHT
+
+
 
 
 
@@ -77,7 +83,7 @@ while True:
                     random.randint(0, SCREEN_HEIGHT),
                 )
             )
-            self.health = 100
+            self.health = 1
             self.speed = 1
 
         def update(self):
@@ -95,7 +101,7 @@ while True:
                     random.randint(0, SCREEN_HEIGHT),
                 )
             )
-            self.health = 167
+            self.health = 1
             self.speed = 1
 
         def update(self):
@@ -120,11 +126,12 @@ while True:
     class Bullet(pygame.sprite.Sprite):
         def __init__(self, x, y, direction):
             super().__init__()
-            BULLET_SPEED = 10
-            self.surf = pygame.image.load("bullet3.png").convert_alpha()
+            self.surf = pygame.image.load("bullet2.png")
             self.rect = self.surf.get_rect(center=(x, y))
-            self.speed = BULLET_SPEED
+            self.speed = 10
             self.direction = direction
+
+
 
         def update(self):
             if self.direction == "right":
@@ -312,6 +319,7 @@ while True:
     background3 = pygame.transform.scale(background3, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 
+
     while startscreen:
 
         screen.blit(background3, (0, 0))
@@ -353,6 +361,8 @@ while True:
 
 
 
+
+
     #Main loop
     while running:
         #Look at every event in the queue
@@ -389,6 +399,9 @@ while True:
 
                     if ammo == MAX_AMMO:
                         reloading = False
+
+
+
 
 
 
@@ -440,6 +453,7 @@ while True:
                 all_sprites.add(new_enemy2)
 
 
+
             if 100 <= player.score < 500 and not boss_spawned:
                 new_boss = Boss()
                 boss.add(new_boss)
@@ -457,6 +471,8 @@ while True:
                 boss2_spawned = True
 
             if player.score >= 1000 and not boss3_spawned:
+                player.direction = "right"
+                player.surf = pygame.image.load("player3.png").convert_alpha()
                 new_boss3 = Boss3()
                 boss3.add(new_boss3)
                 all_sprites.add(new_boss3)
@@ -583,6 +599,7 @@ while True:
 
 
                 if collided_boss.health <= 0:
+
                     collided_boss.kill()
                     boss_fight = False
                     player.score+=50
@@ -590,6 +607,8 @@ while True:
                     RELOAD_TIME = 3000
                     bullet.speed = 15
                     player.surf = pygame.image.load("player2.png").convert_alpha()
+
+                    current_bullet_image = "bullet2"
 
         for bullet in bullets:
             collided_boss2 = pygame.sprite.spritecollideany(bullet, boss2)
@@ -608,24 +627,25 @@ while True:
                     bullet.speed = 20
                     player.surf = pygame.image.load("player3.png").convert_alpha()
 
-
         for bullet in bullets:
             collided_boss3 = pygame.sprite.spritecollideany(bullet, boss3)
             if collided_boss3:
                 bullet.kill()
-                collided_boss3.health-=1
-
+                collided_boss3.health -= 1
 
                 if collided_boss3.health <= 0:
                     collided_boss3.kill()
-                    player.score+=50
+                    player.score += 50
                     boss_fight3 = False
                     MAX_AMMO = 200
                     ammo = MAX_AMMO
                     RELOAD_TIME = 1000
                     bullet.speed = 25
                     player.surf = pygame.image.load("player4.png").convert_alpha()
-                    bullet.surf = pygame.image.load("bullet3.png").convert_alpha()
+                    player.direction = "left"
+
+
+
 
 
     #Boss 1 med+pill(and bpill also) collision:
@@ -726,7 +746,7 @@ while True:
                 screen.blit(score_text2, score_text2.get_rect(center=(SCREEN_WIDTH // 2, 150)))
                 press_text3 = font.render(f"<F for main menu>", True, (255, 0, 0))
                 screen.blit(press_text3, press_text3.get_rect(center=(SCREEN_WIDTH // 2, 200)))
-                enter_text = font.render("<Enter to restart>", True, (255, 0, 0))
+                enter_text = font.render(f"<Enter to restart>", True, (255, 0, 0))
                 screen.blit(enter_text, enter_text.get_rect(center=(SCREEN_WIDTH // 2, 250)))
                 pygame.display.flip()
                 clock.tick(60)
